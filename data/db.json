@@ -1,0 +1,99 @@
+{
+  "patients": [
+    {
+      "id": 1,
+      "name": "Maria Silva",
+      "email": "maria.silva@email.com",
+      "phone": "1234-5678",
+      "goal": "Perda de Peso",
+      "age": 32,
+      "height": "1.56m",
+      "weight": "65kg",
+      "imc": 24.1,
+      "measurements": [
+        { "date": "22/02/2024", "weight": 65, "imc": 24.1, "fat": "25%", "waist": 87, "hip": 99, "arm": 30, "thigh": 58 },
+        { "date": "01/02/2024", "weight": 68, "imc": 25.1, "fat": "27%", "waist": 89, "hip": 101, "arm": 31, "thigh": 59 }
+      ],
+      "labExams": [
+        { "date": "10/02/2024", "type": "Hemograma Completo", "result": "Normal" },
+        { "date": "10/02/2024", "type": "TSH e T4 Livre", "result": "Alterado" },
+        { "date": "10/02/2024", "type": "Perfil Lipídico", "result": "Limítrofe" }
+      ],
+      "anamnese": {
+        "complaints": "Fadiga, dificuldade para emagrecer",
+        "healthHistory": "Hipertensão diagnosticada em 2020",
+        "familyHistory": "Histórico de diabetes na família",
+        "habits": "Sedentária, consome álcool socialmente",
+        "allergies": "Nenhuma conhecida",
+        "medications": "Losartana 50mg/dia",
+        "lifestyle": "Trabalha em escritório, média de 6h de sono por noite",
+        "activity": "Caminhada esporádica 1x/semana"
+      },
+      "mealPlan": [
+        {
+          "meal": "Café da Manhã",
+          "time": "7:00 - 8:00",
+          "items": [
+            "2 fatias de pão integral",
+            "1 col. sopa de cottage ou cream cheese light",
+            "1 xíc. de chá verde ou café sem açúcar"
+          ]
+        },
+        {
+          "meal": "Lanche da Manhã",
+          "time": "10:00 - 10:30",
+          "items": ["1 fruta (média), pera ou banana"]
+        },
+        {
+          "meal": "Almoço",
+          "time": "12:00 - 13:00",
+          "items": [
+            "150g de proteina magra (frango, peixe ou carne)",
+            "1 col. sopa de azeite integral ou quinoa",
+            "Vegetais à vontade - mínimo 2 variedades"
+          ]
+        },
+        {
+          "meal": "Lanche da Tarde",
+          "time": "16:00 - 16:30",
+          "items": ["1 iogurte natural (170g)", "1 col. sopa de granola sem açúcar"]
+        },
+        {
+          "meal": "Jantar",
+          "time": "19:00 - 20:00",
+          "items": ["Omelete (2 ovos) com legumes", "Salada verde com azeite"]
+        }
+      ],
+      "generalGuidelines": [
+        "Beber no mínimo 2L de água por dia",
+        "Evitar alimentos processados",
+        "Preferir refeições caseiras",
+        "Consumir vegetais em todas as refeições",
+        "Limitar o consumo de sal"
+      ],
+      "notes": [
+        { "date": "22/02/2024", "content": "Paciente relatou melhora no sono após ajustes na dieta." },
+        { "date": "15/02/2024", "content": "Paciente adaptada ao novo plano alimentar." }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "João Santos",
+      "email": "joao.santos@email.com",
+      "phone": "8765-4321",
+      "goal": "Ganho de Massa"
+    },
+    {
+      "id": 3,
+      "name": "Ana Oliveira",
+      "email": "ana.oliveira@email.com",
+      "phone": "5678-1234",
+      "goal": "Manutenção"
+    }
+  ],
+  "consultations": [
+    { "id": 1, "date": "2025-04-03", "time": "09:00", "patient": "Maria Silva", "type": "Retorno" },
+    { "id": 2, "date": "2025-04-03", "time": "14:30", "patient": "João Santos", "type": "Primeira Consulta" },
+    { "id": 3, "date": "2025-04-04", "time": "10:00", "patient": "Ana Oliveira", "type": "Retorno" }
+  ]
+}

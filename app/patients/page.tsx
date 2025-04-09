@@ -1,40 +1,146 @@
 import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const patients = [
-  { id: 1, name: "Maria Silva", goal: "Perda de Peso", lastVisit: "2025-04-01" },
-  { id: 2, name: "João Santos", goal: "Ganho de Massa", lastVisit: "2025-03-15" },
-  { id: 3, name: "Ana Oliveira", goal: "Manutenção", lastVisit: "2025-02-10" },
-];
+async function fetchConsultations() {
+  try {
+    const res = await fetch("http://localhost:3000/api/consultations", { cache: "no-store" });
+    if (!res.ok) return null;
+    return res.json();
+  } catch (error) {
+    console.error("Erro ao carregar consultas:", error);
+    return null;
+  }
+}
 
-export default function Patients() {
+async function fetchPatients() {
+  try {
+    const res = await fetch("http://localhost:3000/api/patients", { cache: "no-store" });
+    if (!res.ok) return null;
+    return res.json();
+  } catch (error) {
+    console.error("Erro ao carregar pacientes:", error);
+    return null;
+  }
+}
+
+export default async function Dashboard() {
+  const consultations = await fetchConsultations();
+  const patients = await fetchPatients();
+
+  const today = "2025-04-03";
+  const todayConsultations = consultations ? consultations.filter((c: any) => c.date === today) : [];
+
+  const overduePatients = patients ? patients.length - 2 : 0;
+  const pendingEvaluations = consultations ? consultations.length - 1 : 0;
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-6">
-      <header className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-foreground">Lista de Pacientes</h1>
-        <Link href="/" className="text-blue-600 dark:text-blue-400 hover:underline">
-          Voltar ao Dashboard
-        </Link>
-      </header>
-      <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-        <ul className="space-y-4">
-          {patients.map((patient) => (
-            <li key={patient.id} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg flex justify-between items-center">
-              <div>
-                <p className="font-medium">{patient.name}</p>
+      <h1 className="text-2xl font-bold text-foreground mb-8">Nutridex - Dashboard</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Consultas de Hoje</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-4">
+              {todayConsultations.length > 0 ? (
+                todayConsultations.map((consultation: any) => (
+                  <li key={consultation.id} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <p className="font-medium">
+                      {consultation.time} - {consultation.patient}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{consultation.type}</p>
+                  </li>
+                ))
+              ) : (
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Objetivo: {patient.goal} | Última Visita: {patient.lastVisit}
+                  {consultations === null ? "Erro ao carregar consultas." : "Nenhuma consulta hoje."}
                 </p>
+              )}
+            </ul>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Avisos Importantes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="p-4 bg-red-100 dark:bg-red-900 rounded-lg">
+                <p className="text-sm text-red-800 dark:text-red-200">
+                  {overduePatients} pacientes sem retorno há mais de 30 dias
+                </p>
+                <Link href="/patients" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                  Clique para ver detalhes
+                </Link>
               </div>
-              <Link
-                href={`/patients/${patient.id}`}
-                className="text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                Ver Detalhes
+              <div className="p-4 bg-green-100 dark:bg-green-900 rounded-lg">
+                <p className="text-sm text-green-800 dark:text-green-200">
+                  {pendingEvaluations} avaliações de progresso pendentes
+                </p>
+                <Link href="/patients" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                  Agende os retornos
+                </Link>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Estatísticas do Mês</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                <p className="text-2xl font-bold">{consultations ? consultations.length : 0}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Consultas (Este mês)</p>
+              </div>
+              <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                <p className="text-2xl font-bold">{patients ? patients.length : 0}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Novos Pacientes (Este mês)</p>
+              </div>
+              <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                <p className="text-2xl font-bold">85%</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Taxa Retorno (Média mensal)</p>
+              </div>
+              <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
+                <p className="text-2xl font-bold">20</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Objetivos Alcançados</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Próximos Retornos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <p className="text-sm">{consultations ? consultations.length : 0} retornos agendados para a semana</p>
+              <Link href="/schedule" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                Ver agenda completa →
               </Link>
-            </li>
-          ))}
-        </ul>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Metas em Andamento</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <p className="text-sm">{patients ? patients.length : 0} pacientes em acompanhamento de peso</p>
+              <Link href="/patients" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                Ver detalhes →
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
-} 
+}
