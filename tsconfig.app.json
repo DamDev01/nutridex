@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": [
+      "node"
+    ],
+    "incremental": false
+  },
+  "include": [
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "tests/**/*.ts",
+    "playwright.config.ts",
+    "middleware.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".vinext",
+    ".wrangler"
+  ]
+}

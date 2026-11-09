@@ -1,0 +1,34 @@
+-- Run after billing.sql. Everything is rolled back, including synthetic billing data.
+begin;
+insert into public.billing_accounts(owner_id,stripe_customer_id) values('1bcce29d-c30e-4de5-bed7-a9c9e82ec4e3','cus_nutridex_qa_rollback');
+set local role authenticated;
+select set_config('request.jwt.claim.sub','1bcce29d-c30e-4de5-bed7-a9c9e82ec4e3',true);
+do $$ begin
+ assert not private.nutridex_has_access(),'Unpaid user gained access';
+ assert (select count(*)=0 from public.patients),'Unpaid user read clinical records';
+ begin insert into public.patients(name,owner_id) values('QA rollback','1bcce29d-c30e-4de5-bed7-a9c9e82ec4e3');raise exception 'Unpaid insert allowed';exception when insufficient_privilege then null;end;
+ assert not has_function_privilege('authenticated','public.nutridex_sync_subscription(text,text,text,timestamptz,boolean,timestamptz)','execute'),'User can grant own access';
+ assert not has_table_privilege('authenticated','public.billing_accounts','update'),'User can alter billing';
+end $$;
+reset role;
+insert into public.billing_subscriptions(stripe_subscription_id,stripe_customer_id,status,paid_until) values('sub_nutridex_qa_rollback','cus_nutridex_qa_rollback','active',now()+interval '1 day');
+set local role authenticated;
+do $$ begin assert private.nutridex_has_access(),'Paid user blocked';assert (select count(*)>0 from public.patients),'Paid owner cannot read own records';end $$;
+select set_config('request.jwt.claim.sub','d37bbfea-8361-484d-9bec-56d79f239d68',true);
+do $$ begin assert not private.nutridex_has_access(),'Other account inherited access';assert (select count(*)=0 from public.patients),'Other account read patient data';end $$;
+reset role;
+update public.billing_subscriptions set paid_until=now()-interval '1 second' where stripe_subscription_id='sub_nutridex_qa_rollback';
+set local role authenticated;
+select set_config('request.jwt.claim.sub','1bcce29d-c30e-4de5-bed7-a9c9e82ec4e3',true);
+do $$ begin assert not private.nutridex_has_access(),'Expired user gained access';end $$;
+reset role;
+update public.billing_subscriptions set status='canceled',paid_until=now()+interval '1 day' where stripe_subscription_id='sub_nutridex_qa_rollback';
+set local role authenticated;
+do $$ begin assert not private.nutridex_has_access(),'Canceled user gained access';end $$;
+reset role;
+update public.billing_subscriptions set status='active' where stripe_subscription_id='sub_nutridex_qa_rollback';
+update public.billing_accounts set blocked=true where stripe_customer_id='cus_nutridex_qa_rollback';
+set local role authenticated;
+do $$ begin assert not private.nutridex_has_access(),'Risk hold bypassed';end $$;
+reset role;
+rollback;
