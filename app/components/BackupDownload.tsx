@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { strToU8, zip, type Zippable } from 'fflate';
+import { Archive, ArrowDownToLine, FolderLock, ShieldCheck, X } from 'lucide-react';
+import styles from './backup.module.css';
 
 export function BackupDownload() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [accepted, setAccepted] = useState(false);
+  const dialog = useRef<HTMLDialogElement>(null);
 
   async function download() {
     setBusy(true);
@@ -49,9 +53,44 @@ export function BackupDownload() {
     } finally { setBusy(false); }
   }
 
-  return <div className="space-y-3">
-    <p>Baixe os dados do seu consultório e as fotografias em um arquivo ZIP para guardar no local de sua preferência. Evite editar registros durante a geração.</p>
-    <button type="button" className="nx-button" disabled={busy} onClick={() => void download()}>{busy ? 'Gerando backup…' : 'Baixar backup completo (.zip)'}</button>
-    <p role="status" aria-live="polite">{message}</p>
-  </div>;
+  return <>
+    <div className={styles.backup} aria-busy={busy}>
+      <div className={styles.overview}>
+        <span className={styles.icon}><Archive aria-hidden="true" size={25} /></span>
+        <div>
+          <span className={styles.eyebrow}>SEUS DADOS COM VOCÊ</span>
+          <h3>Uma cópia do seu consultório</h3>
+          <p>Exporte seus registros e fotografias em um único arquivo ZIP e escolha onde guardar.</p>
+        </div>
+      </div>
+      <div className={styles.footer}>
+        <span className={styles.hint}><ShieldCheck aria-hidden="true" size={18} /> Download privado · Até 256 MB</span>
+        <button type="button" className={styles.primary} disabled={busy} onClick={() => { setAccepted(false); dialog.current?.showModal(); }}>
+          <ArrowDownToLine aria-hidden="true" size={18} />{busy ? 'Gerando backup…' : 'Baixar backup completo'}
+        </button>
+      </div>
+      <p className={message ? styles.status : styles.silentStatus} role="status" aria-live="polite">{message}</p>
+    </div>
+    <dialog ref={dialog} className={styles.dialog} aria-labelledby="backup-title" aria-describedby="backup-description" onClose={() => setAccepted(false)}>
+      <div className={styles.dialogHeader}>
+        <span className={styles.icon}><FolderLock aria-hidden="true" size={25} /></span>
+        <button type="button" className={styles.close} aria-label="Fechar orientações de backup" onClick={() => dialog.current?.close()}><X aria-hidden="true" size={20} /></button>
+      </div>
+      <span className={styles.eyebrow}>ANTES DE BAIXAR</span>
+      <h2 id="backup-title">Cuide da sua cópia de segurança</h2>
+      <p id="backup-description" className={styles.intro}>O ZIP reúne os registros do consultório e as fotografias da sua conta, incluindo dados pessoais e clínicos dos pacientes.</p>
+      <div className={styles.guidance}>
+        <section><h3>Guarde em um lugar privado</h3><p>Escolha uma pasta protegida no computador, um HD externo ou uma conta pessoal no Google Drive, OneDrive ou Dropbox. Confira quem tem acesso à pasta e evite links públicos.</p></section>
+        <section><h3>A cópia fica sob seus cuidados</h3><p>Ao baixar, você fica responsável por guardar, proteger e compartilhar essa cópia apenas com pessoas autorizadas. O ZIP não é protegido por senha. Prefira armazenamento com senha e autenticação em duas etapas.</p></section>
+        <section><h3>Confira o arquivo depois de baixar</h3><p>Mantenha esta página aberta e evite editar registros durante a geração. Depois, confirme que o ZIP abre e contém seus arquivos. A restauração automática por upload ainda não está disponível.</p></section>
+      </div>
+      <form onSubmit={event => { event.preventDefault(); if (!accepted || busy) return; dialog.current?.close(); void download(); }}>
+        <label className={styles.acceptance}><input type="checkbox" required checked={accepted} onChange={event => setAccepted(event.target.checked)} /><span>Li as orientações e estou ciente dos cuidados e da minha responsabilidade pela cópia baixada.</span></label>
+        <div className={styles.dialogActions}>
+          <button type="button" className={styles.secondary} onClick={() => dialog.current?.close()}>Cancelar</button>
+          <button type="submit" className={styles.primary} disabled={!accepted || busy}><ArrowDownToLine aria-hidden="true" size={18} />Aceitar e baixar ZIP</button>
+        </div>
+      </form>
+    </dialog>
+  </>;
 }
